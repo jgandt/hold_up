@@ -1,4 +1,4 @@
-defmodule HoldUpStorage.Mnesia do
+defmodule HoldUpStorage.Tables do
   def setup do
     :mnesia.create_schema([node()])
     :mnesia.start()

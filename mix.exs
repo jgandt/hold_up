@@ -15,6 +15,8 @@ defmodule HoldUp.Mixfile do
   #
   # Run "mix help deps" for examples and options.
   defp deps do
-    []
+    [
+      {:timex, "~> 3.1"}
+    ]
   end
 end

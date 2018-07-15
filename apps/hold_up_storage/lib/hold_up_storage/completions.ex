@@ -1,58 +1,41 @@
+require IEx
+
 defmodule HoldUpStorage.Completions do
-  use GenServer
+  use Timex
+  alias HoldUpStorage.{CompletionReaper, Tasks}
 
-  def start_link(_args) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def incomplete_tasks do
+    Tasks.list_tasks() -- completed_tasks()
   end
 
-  def list_incomplete_tasks(server) do
-    GenServer.call(server, {:list_incomplete_tasks})
-  end
+  def complete_task(task_name) do
+    {:ok, ttl} = Tasks.get_task_ttl(task_name)
+    {:atomic, :ok} = :mnesia.transaction(
+      fn ->
+        :mnesia.write({Completions, task_name, ttl})
+      end
+    )
 
-  def complete_task(server, task_name) do
-    # Add task to completed
     # schedule removal job
-    GenServer.cast(server, {:complete_task, task_name})
-  end
-
-  def list_completions do
-    []
+    {:ok, reaper_pid} = DynamicSupervisor.start_child(
+      HoldUpStorage.CompletionSupervisor,
+      {CompletionReaper, [%{task_name: task_name}]})
+    )
   end
 
   def init(:ok) do
-    {:ok, list_completions()}
+    # ON INIT schedule removal tasks for all entries in Completions
+    {:ok, nil}
   end
 
-  def handle_call({:list_tasks}, _from, completed_tasks) do
-    {:reply, all_task_names(), completed_tasks}
-  end
-
-  def handle_call({:list_incomplete_tasks}, _from, completed_tasks) do
-    {:reply, all_task_names -- completed_tasks, completed_tasks}
-  end
-
-  def handle_cast({:complete_task, task_name}, completed_tasks) do
-    {:noreply, completed_tasks ++ [task_name]}
-  end
-
-  def handle_call({:find_task, task_name}, _from, completed_tasks) do
-    # This could just be a read from the tasks Map.
-    # mnesia is only being used for persistence across reboots
-    read_task = fn -> :mnesia.read({Task, task_name}) end
-    return_val = case :mnesia.transaction(read_task) do
-      {:atomic, []} -> {:error, :not_found}
-      {:atomic, [{Task, ^task_name, ttl}]} -> {:ok, {task_name, ttl}}
+  def completed_tasks do
+    completion_retrieval = fn ->
+      :mnesia.foldl(fn(task, accum) ->
+        [elem(task, 1)] ++ accum
+      end, [], Completions)
     end
 
-    {:reply, return_val, completed_tasks}
-  end
-
-  def handle_cast({:add_task, task_name, ttl}, completed_tasks) do
-    {:atomic, :ok} = :mnesia.transaction(
-      fn ->
-        :mnesia.write({Task, task_name, ttl})
-      end
-    )
-    {:noreply, completed_tasks}
+    {:atomic, list} = :mnesia.transaction(completion_retrieval)
+    list
   end
 end

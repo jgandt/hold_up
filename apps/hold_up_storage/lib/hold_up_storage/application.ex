@@ -4,22 +4,21 @@ defmodule HoldUpStorage.Application do
   @moduledoc false
 
   use Application
-  alias HoldUpStorage.Mnesia
+  alias HoldUpStorage.Tables
 
   def start(_type, _args) do
-    Mnesia.setup
-    Mnesia.build_tables
+    Tables.setup
+    Tables.build_tables
 
     # List all child processes to be supervised
     children = [
       # Starts a worker by calling: HoldUpStorage.Worker.start_link(arg)
-      # {HoldUpStorage.Worker, arg},
-      HoldUpStorage.Store,
+      HoldUpStorage.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: HoldUpStorage.Supervisor]
+    opts = [strategy: :one_for_one]
     Supervisor.start_link(children, opts)
   end
 end
