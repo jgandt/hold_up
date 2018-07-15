@@ -7,6 +7,20 @@ defmodule HoldUpStorage.Completions do
   end
 
   def complete_task(task_name) do
+
+    SOMETHING WAS GOING WRONG HERE.
+
+    COME UP WITH BETTER TEST CASES.
+      ADD TASK WITH DURATION.
+      COMPLETE TASK
+      RE-ADD TASK WITH DURATION.
+      RE-COMPLETE TASK
+      BE SURE TASK IS INCOMPLETE WHEN THE SECOND DURATION EXPIRES.
+
+    MAYBE WATCH PROCESSES?
+    MAYBE PUT IN BINDINGS IN THE REAPER?
+
+
     {:ok, ttl} = Tasks.get_task_ttl(task_name)
     {:atomic, :ok} = :mnesia.transaction(
       fn ->
