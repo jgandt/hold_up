@@ -25,5 +25,7 @@ defmodule HoldUpStorage.CompletionReaper do
     completion_delete = fn -> :mnesia.delete({Completions, task_name}) end
     {:atomic, :ok} = :mnesia.transaction(completion_delete)
     {:noreply, state}
+    # Use this one unless you're testing
+    # {:stop, :shutdown, state}
   end
 end
