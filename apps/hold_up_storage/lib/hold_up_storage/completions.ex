@@ -17,9 +17,9 @@ defmodule HoldUpStorage.Completions do
     )
 
     # schedule removal job
-    {:ok, reaper_pid} = DynamicSupervisor.start_child(
+    {:ok, _} = DynamicSupervisor.start_child(
       HoldUpStorage.CompletionSupervisor,
-      {CompletionReaper, [%{task_name: task_name}]})
+      {CompletionReaper, [%{task_name: task_name}]}
     )
   end
 

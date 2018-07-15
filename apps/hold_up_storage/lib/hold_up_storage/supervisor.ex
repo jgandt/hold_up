@@ -7,11 +7,9 @@ defmodule HoldUpStorage.Supervisor do
 
   def init([]) do
     children = [
-      HoldUpStorage.CompletionSupervisor
+      HoldUpStorage.CompletionSupervisor,
+      {Registry, keys: :unique, name: HoldUpStorage.CompletionReaperRegistry}
     ]
-
-
-    YOU WERE CREATING A SUPERVISED REGISTRY TO TRACK REAPER PROCESSES BY TASK_NAME
 
     # supervise/2 is imported from Supervisor.Spec
     Supervisor.init(children, strategy: :one_for_one)
