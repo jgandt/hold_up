@@ -1,5 +1,3 @@
-require IEx
-
 defmodule HoldUpStorage.CompletionReaper do
   use GenServer
   use Timex

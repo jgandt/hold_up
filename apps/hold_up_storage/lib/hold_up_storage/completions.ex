@@ -1,5 +1,3 @@
-require IEx
-
 defmodule HoldUpStorage.Completions do
   use Timex
   alias HoldUpStorage.{CompletionReaper, Tasks}
