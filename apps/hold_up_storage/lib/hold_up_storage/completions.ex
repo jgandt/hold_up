@@ -7,7 +7,6 @@ defmodule HoldUpStorage.Completions do
   end
 
   def complete_task(task_name) do
-
     # SOMETHING WAS GOING WRONG HERE.
 
     # COME UP WITH BETTER TEST CASES.
@@ -29,10 +28,16 @@ defmodule HoldUpStorage.Completions do
     )
 
     # schedule removal job
-    {:ok, _} = DynamicSupervisor.start_child(
-      HoldUpStorage.CompletionSupervisor,
-      Supervisor.child_spec({CompletionReaper, [%{task_name: task_name}]}, restart: :transient)
+    CompletionReaper.reap(task_name)
+  end
+
+  def uncomplete_task(task_name) do
+    {:atomic, :ok} = :mnesia.transaction(
+      fn ->
+        :mnesia.delete({Completions, task_name})
+      end
     )
+    CompletionReaper.reap_and_terminate(task_name)
   end
 
   def init(:ok) do
