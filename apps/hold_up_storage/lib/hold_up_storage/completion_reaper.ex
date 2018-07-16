@@ -22,7 +22,7 @@ defmodule HoldUpStorage.CompletionReaper do
   def handle_info(:reap, state = %{task_name: task_name}) do
     completion_delete = fn -> :mnesia.delete({Completions, task_name}) end
     {:atomic, :ok} = :mnesia.transaction(completion_delete)
-    {:stop, :shutdown, state}
+    {:stop, :normal, state}
   end
 
   def register(task_name) do

@@ -8,17 +8,17 @@ defmodule HoldUpStorage.Completions do
 
   def complete_task(task_name) do
 
-    SOMETHING WAS GOING WRONG HERE.
+    # SOMETHING WAS GOING WRONG HERE.
 
-    COME UP WITH BETTER TEST CASES.
-      ADD TASK WITH DURATION.
-      COMPLETE TASK
-      RE-ADD TASK WITH DURATION.
-      RE-COMPLETE TASK
-      BE SURE TASK IS INCOMPLETE WHEN THE SECOND DURATION EXPIRES.
+    # COME UP WITH BETTER TEST CASES.
+    #   ADD TASK WITH DURATION.
+    #   COMPLETE TASK
+    #   RE-ADD TASK WITH DURATION.
+    #   RE-COMPLETE TASK
+    #   BE SURE TASK IS INCOMPLETE WHEN THE SECOND DURATION EXPIRES.
 
-    MAYBE WATCH PROCESSES?
-    MAYBE PUT IN BINDINGS IN THE REAPER?
+    # MAYBE WATCH PROCESSES?
+    # MAYBE PUT IN BINDINGS IN THE REAPER?
 
 
     {:ok, ttl} = Tasks.get_task_ttl(task_name)
@@ -31,7 +31,7 @@ defmodule HoldUpStorage.Completions do
     # schedule removal job
     {:ok, _} = DynamicSupervisor.start_child(
       HoldUpStorage.CompletionSupervisor,
-      {CompletionReaper, [%{task_name: task_name}]}
+      Supervisor.child_spec({CompletionReaper, [%{task_name: task_name}]}, restart: :transient)
     )
   end
 
