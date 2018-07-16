@@ -8,9 +8,14 @@ defmodule HoldUpStorage.CompletionReaper do
   end
 
   def reap_and_terminate(task_name) do
-    [{existing_reaper, _}] = existing_reaper(task_name)
-    send(existing_reaper, :reap)
-    remove_existing_reaper(task_name)
+    # COULD I INSTEAD JUST DELETE THE COMPLETION FROM :MNESIA
+    # AND JUST FORGET THE REAPER AND LET IT DIE?
+    case existing_reaper(task_name) do
+      [{old_reaper, _}] ->
+        send(old_reaper, :reap)
+        remove_existing_reaper(task_name)
+      _ -> nil
+    end
   end
 
   def reap(task_name) do
@@ -29,7 +34,6 @@ defmodule HoldUpStorage.CompletionReaper do
   end
 
   def handle_info(:reap, state = %{task_name: task_name}) do
-    IO.puts("completing task #{task_name}")
     completion_delete = fn -> :mnesia.delete({Completions, task_name}) end
     {:atomic, :ok} = :mnesia.transaction(completion_delete)
     {:stop, :normal, state}
@@ -52,6 +56,6 @@ defmodule HoldUpStorage.CompletionReaper do
   end
 
   def existing_reaper(task_name) do
-    [{existing_reaper, _}] = Registry.lookup(CompletionReaperRegistry, task_name)
+    Registry.lookup(CompletionReaperRegistry, task_name)
   end
 end

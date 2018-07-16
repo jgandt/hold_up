@@ -1,6 +1,6 @@
 defmodule HoldUpStorage.Tasks do
   use Timex
-  alias HoldUpStorage.Completions
+  alias HoldUpStorage.CompletionReaper
 
   def list_tasks do
     task_retrieval = fn ->
@@ -38,6 +38,6 @@ defmodule HoldUpStorage.Tasks do
         :mnesia.write({Tasks, task_name, ttl})
       end
     )
-    Completions.uncomplete_task(task_name)
+    CompletionReaper.reap_and_terminate(task_name)
   end
 end
