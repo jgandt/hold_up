@@ -7,16 +7,6 @@ defmodule HoldUpStorage.Completions do
   end
 
   def complete_task(task_name) do
-    # SOMETHING WAS GOING WRONG HERE.
-
-    # COME UP WITH BETTER TEST CASES.
-    #   ADD TASK WITH DURATION.
-    #   COMPLETE TASK
-    #   RE-ADD TASK WITH DURATION.
-    #   RE-COMPLETE TASK
-    #   BE SURE TASK IS INCOMPLETE WHEN THE SECOND DURATION EXPIRES.
-
-
     {:ok, ttl} = Tasks.get_task_ttl(task_name)
     {:atomic, :ok} = :mnesia.transaction(
       fn ->
@@ -28,12 +18,7 @@ defmodule HoldUpStorage.Completions do
     CompletionReaper.reap(task_name)
   end
 
-  # def uncomplete_task(task_name) do
-  #   CompletionReaper.reap_and_terminate(task_name)
-  # end
-
   def init(:ok) do
-    # ON INIT schedule removal tasks for all entries in Completions
     {:ok, nil}
   end
 

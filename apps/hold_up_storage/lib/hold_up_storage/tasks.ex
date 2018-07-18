@@ -38,6 +38,6 @@ defmodule HoldUpStorage.Tasks do
         :mnesia.write({Tasks, task_name, ttl})
       end
     )
-    CompletionReaper.reap_and_terminate(task_name)
+    CompletionReaper.reap_now(task_name)
   end
 end

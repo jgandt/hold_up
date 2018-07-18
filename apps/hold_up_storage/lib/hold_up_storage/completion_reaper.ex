@@ -7,13 +7,10 @@ defmodule HoldUpStorage.CompletionReaper do
     GenServer.start_link(__MODULE__, state)
   end
 
-  def reap_and_terminate(task_name) do
-    # COULD I INSTEAD JUST DELETE THE COMPLETION FROM :MNESIA
-    # AND JUST FORGET THE REAPER AND LET IT DIE?
+  def reap_now(task_name) do
     case existing_reaper(task_name) do
       [{old_reaper, _}] ->
-        send(old_reaper, :reap)
-        remove_existing_reaper(task_name)
+        GenServer.call(old_reaper, :reap)
       _ -> nil
     end
   end
@@ -33,10 +30,19 @@ defmodule HoldUpStorage.CompletionReaper do
     {:ok, state}
   end
 
-  def handle_info(:reap, state = %{task_name: task_name}) do
+  def handle_call(:reap, _from, %{task_name: task_name}) do
+    delete_and_stop(task_name)
+    {:stop, :normal, state}
+  end
+
+  def handle_info(:reap, %{task_name: task_name}) do
+    delete_and_stop(task_name)
+    {:stop, :normal, state}
+  end
+
+  def delete_task(task_name) do
     completion_delete = fn -> :mnesia.delete({Completions, task_name}) end
     {:atomic, :ok} = :mnesia.transaction(completion_delete)
-    {:stop, :normal, state}
   end
 
   def register(task_name) do
