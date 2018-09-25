@@ -31,13 +31,13 @@ defmodule HoldUpStorage.CompletionReaper do
   end
 
   def handle_call(:reap, _from, %{task_name: task_name}) do
-    delete_and_stop(task_name)
-    {:stop, :normal, state}
+    delete_task(task_name)
+    {:stop, :normal, %{ task_name: task_name }}
   end
 
   def handle_info(:reap, %{task_name: task_name}) do
-    delete_and_stop(task_name)
-    {:stop, :normal, state}
+    delete_task(task_name)
+    {:stop, :normal, %{ task_name: task_name }}
   end
 
   def delete_task(task_name) do
